@@ -7,7 +7,7 @@ CLI to download latest or manage your GE-Proton for Steam
 - Update Notes: [CHANGES](CHANGES.md) 
 - License: [MIT License](LICENSE)
 
-![demo](demo.mp4)
+![demo](./demo.mp4)
 
 # Introduction
 
