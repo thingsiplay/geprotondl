@@ -277,7 +277,10 @@ class GithubDatabaseEntry:
                     view['download_url'] = urlparse(dl)
                     view['filename'] = asset['name'].strip()
                     view['size'] = int(asset['size'])
-                elif content_type == 'application/octet-stream':
+                elif content_type in [
+                    "application/octet-stream",
+                    "binary/octet-stream",
+                ]:
                     dl = asset['browser_download_url'].strip()
                     view['checksum_download_url'] = urlparse(dl)
                     view['checksum_filename'] = asset['name'].strip()
