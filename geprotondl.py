@@ -943,6 +943,7 @@ class GithubDatabase:
     # if necessary.
     def load_db(self) -> bool:
         self.db = None
+        self.file.parent.mkdir(parents=True, exist_ok=True)
         if self.force or self.is_expired():
             self.file.unlink(missing_ok=True)
             self.download()
