@@ -271,7 +271,8 @@ class GithubDatabaseEntry:
             view['size'] = 0
             for asset in self.data['assets']:
                 content_type: str = asset['content_type'].strip()
-                if content_type == 'application/gzip':
+                is_archive: bool = ".tar.gz" in asset["name"].strip()
+                if content_type == 'application/gzip' or is_archive:
                     dl = asset['browser_download_url'].strip()
                     view['download_url'] = urlparse(dl)
                     view['filename'] = asset['name'].strip()
