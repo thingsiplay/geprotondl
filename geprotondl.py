@@ -490,7 +490,7 @@ class App:
 
     author = "Tuncay D."
     name = "geprotondl"
-    version = "0.1"
+    version = "0.2"
     license = "MIT"
 
     def __init__(self, options: argparse.Namespace) -> None:
@@ -1100,7 +1100,7 @@ def parse_arguments(argv: list[str]
         description=("CLI to download latest or manage your GE-Proton for "
                      "Steam"),
         epilog=("\n\n"
-                "Copyright © 2023 Tuncay D. "
+                "Copyright © 2023, 2024 Tuncay D. "
                 "<https://github.com/thingsiplay/geprotondl>"))
 
     parser.add_argument(
