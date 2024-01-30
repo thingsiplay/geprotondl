@@ -105,6 +105,11 @@ then
     exit 1
 fi
 
+# Delete all summary files for each entry that has no downloadable content
+# available yet.
+grep -ls 'Download Size:[[:space:]]*0 Bytes' -- "${cache_dir}/"*.summary |
+	xargs rm -f --
+
 create_summary () {
     local file="${cache_dir}/${1}.summary"
     if [ "${opt_force}" == 1 ] || ! [ -f "${file}" ]
