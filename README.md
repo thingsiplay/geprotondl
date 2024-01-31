@@ -3,13 +3,13 @@
 CLI to download latest or manage your GE-Proton for Steam
 
 - Author: Tuncay D.
-- Source: https://github.com/thingsiplay/geprotondl
-- Update Notes: [CHANGES](CHANGES.md) 
+- Source: [Github](https://github.com/thingsiplay/geprotondl)
+- Update Notes: [CHANGES](CHANGES.md)
 - License: [MIT License](LICENSE)
 
 ![demo](https://raw.githubusercontent.com/thingsiplay/geprotondl/main/demo.mp4)
 
-# Introduction
+## Introduction
 
 Did you always wanted to install the newest [GE-Proton from Glorious
 Eggroll](https://github.com/GloriousEggroll/proton-ge-custom), but constantly
@@ -22,49 +22,46 @@ install or remove GE-Proton packages, while staying in the terminal.
 GE-Proton is an alternative to the Valve Proton in Steam. It gets faster
 updates and often has additional fixes.
 
-## Features
+### Features
 
-* supports only GE-Proton from Glorious Eggroll
-* install or uninstall a package version
-* list local installations
-* list available versions from online repository
-* display summary description
-* automatically verify downloads
-* no external dependency on a Python library
-* no graphical user interface
-* Steam only
-* Linux only
-* ... and much less!
+- supports only GE-Proton from Glorious Eggroll
+- install or uninstall a package version
+- list local installations
+- list available versions from online repository
+- display summary description
+- automatically verify downloads
+- no external dependency on a Python library
+- no graphical user interface
+- Steam only
+- Linux only
+- ... and much less!
 
-## Quick Start
+### Quick Start
 
-(Note: Everything after Dollar sign "`$`" is meant to be a terminal command for
-you to enter.)
-
+```bash
+git clone https://github.com/thingsiplay/geprotondl
+cd geprotondl
+bash suggested_install.sh
+geprotondl --help
+# And if you have fzf installed, you can also try following command:
+geprotondl-fzf
 ```
-$ git clone https://github.com/thingsiplay/geprotondl
-$ cd geprotondl
-$ bash suggested_install.sh
-$ geprotondl --help
-```
 
-# Requirements
+## Requirements
 
 This program is written in Python 3.10. No other Python library is required.
 Only the standard command *tar* is needed, which is installed at default on all
 Linux distributions anyway. The Bash script *geprotondl-fzf.sh* is not part of
 the core application and requires [fzf](https://github.com/junegunn/fzf) to
-build a menu. And *geprotondl-up.py* requires the core application
-*geprotondl.py* to have it's ".py" file extension in order to function (which
-can be a symbolic link too).
+build and show an interactive menu.
 
-# Installation
+## Installation
 
 Download directly from Github repository with:
 
-```
-$ git clone https://github.com/thingsiplay/geprotondl
-$ cd geprotondl
+```bash
+git clone https://github.com/thingsiplay/geprotondl
+cd geprotondl
 ```
 
 *geprotondl.py* is the main application. Just copy the script into a folder in
@@ -75,32 +72,31 @@ directory from `$PATH` and copy, rename and set permission of all commands. You
 can run the installer with arguments too, so it will only look for those
 folders.
 
-```
-$ bash suggested_install.sh
+```bash
+bash suggested_install.sh
 ```
 
 or
 
-```
-$ bash suggested_install.sh "$HOME/my/bin" "$HOME/another/path"
+```bash
+bash suggested_install.sh "$HOME/my/bin" "$HOME/another/path"
 ```
 
 Following commands are provided afterwards:
 
 1. `geprotondl`
-2. `geprotondl-up`
-3. `geprotondl-fzf`
+2. `geprotondl-fzf`
 
-# Usage
+## Usage
 
 When you run the application for the first time, it will download a small
 database file from Github containing the links and other information for each
 GE-Proton release. This file expires after 1 hour and will be re-downloaded
-next time. 
+next time.
 
 Use `$ geprotondl --help` to list all options and their brief descriptions.
 
-## Location of GE-Proton installations
+### Location of GE-Proton installations
 
 The folder where all versions are downloaded and installed into is searched
 each time the program starts. It will lookup for your Steam installation and
@@ -108,7 +104,7 @@ use the subfolder "compatibilitytools.d", which is where Steam expects
 alternative Proton versions. Or force the usage of a specific folder with
 option `-D DIR` or `--dir DIR`.
 
-## Operational Modes
+### Operational Modes
 
 There are 3 distinct main operational modes: *install*, *remove* and *test*
 
@@ -118,8 +114,8 @@ choose a specific version from the online repository. A version can be chosen
 by typing a number, which corresponds to a specific GE-Proton version in the
 list.
 
-```
-$ geprotondl --install --list
+```bash
+geprotondl --install --list
 ```
 
 With the option `-r` or `--remove` the oldest version of GE-Proton found on
@@ -127,15 +123,15 @@ your system is suggested for uninstall. Combine it with `-l` or `--list` to
 choose a specific version from local installations. A version can be chosen by
 typing a number, which corresponds to a specific GE-Proton version in the list.
 
-```
-$ geprotondl --remove --list
+```bash
+geprotondl --remove --list
 ```
 
 Use `-t` or `--test` to check if the newest version is installed on your
 system. If it's not, then the tag name of it will be output.
 
-```
-$ geprotondl --test
+```bash
+geprotondl --test
 ```
 
 This is also helpful to test by combining with `-T NAME` or `--tag NAME` with a
@@ -143,51 +139,45 @@ specific version. Option `-b` or `--brief` will change the output from full
 tagname to short version number only. However combining with a listing such as
 `--list` or `--releases` will always output the selected version.
 
-## Version Listing
+### Version Listing
 
 To show a list without any user interaction for selection, use the listing
 option without an operational mode. To get a list of all local installed
 versions, use `-l` or `--list` .
 
-```
-$ geprotondl --list
+```bash
+geprotondl --list
 ```
 
 And to get a list of all available versions ready for install from repository,
 use `-L` or `--releases` .
 
-```
-$ geprotondl --releases
+```bash
+geprotondl --releases
 ```
 
-## Summary Info
+### Summary Info
 
 Another great option is `-s` or `--summary` to print description and meta
 information about the selected GE-Proton version. Note, the program defaults to
 the newest online available one, if nothing else is specified or selected.
 
-```
-$ geprotondl --summary
+```bash
+geprotondl --summary
 ```
 
 The summary can be combined with the other options to get information of
 specific selected versions in example. And output can be customized to a degree
 too; check out `-b` or `--brief` and `-H` or `--human` .
 
-## Frontend Scripts
+### Frontend Scripts
 
 While these useful scripts are not part of the core application itself, they
 are still useful and created for your convenience.
 
-### geprotondl-up.py
+#### geprotondl-fzf.sh
 
-Very restrictive and has only one purpose: Check if newest available GE-Proton
-version is found on the local machine and prompt for installation if it's not.
-No commandline options are passed over to the main program.
-
-### geprotondl-fzf.sh
-
-Uses external program `fzf` to build a menu with all available GE-Proton
+Uses external application `fzf` to build a menu with all available GE-Proton
 versions. While browsing the list, the current highlighted entry will show
 corresponding summary. The confirmed selection will be prompted for
 installation, but if it's already installed, it will ask to remove. Only use
@@ -195,32 +185,31 @@ short options with single dash, such as `-f` because long options are currently
 not compatible. All options are forwarded to the main program *geprotondl.py*
 as well.
 
-# Additional files in use
+## Additional files in use
 
 These files are created by the script or optionally by the user. (Besides the
 downloaded and unpacked GE-Proton installations in the "compatibilitytools.d"
 folder.)
 
-## created automatically
+### created automatically
 
+- `~/.cache/geprotondl/releases.json`: Main database to operate on. This file
+is downloaded from
+[Github API](https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases)
+on start of application and will expire after 1 hour. This is cached, so a
+re-download won't slow down with every usage of the program in short periods.
+Github has a limit how often the database can be accessed per hour. A
+re-download is required in order to detect any new available version of
+GE-Proton.
 
-* `~/.cache/geprotondl/releases.json`: Main database to operate on. This file
-  is downloaded from Github on start of application and will expire after 1
-  hour. This is cached, so a re-download won't slow down with every usage of
-  the program in short periods. Github has a limit how often the database can
-  be accessed per hour. A re-download is required in order to detect any new
-  available version of GE-Proton.
+### created automatically only by geprotondl-fzf.sh
 
-## created automatically only by geprotondl-fzf.sh
+- `~/.cache/geprotondl/*.summary`: These are just text files and contain output
+of the `--summary` option for each GE-Proton version. This helps with the
+performance when scrolling through the dynamically created menu, as the summary
+is loaded every time the current selection focus changes.
 
-
-* `~/.cache/geprotondl/*.summary`: These are just text files and contain output
-  of the `--summary` option for each GE-Proton version. This helps with the
-  performance when scrolling through the dynamically created menu, as the
-  summary is loaded every time the current selection focus changes.
-
-
-## temporary files (deleted automatically)
+### temporary files (deleted automatically)
 
 The program creates temporary folder to save downloads into. These are deleted
 after the job is done. The exact folders are determined by Python and the
