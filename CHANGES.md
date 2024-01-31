@@ -17,8 +17,8 @@ Update history for **geprotondl**.
 
 ## v0.3
 
-- change: geprotondl-fzf.sh: now searches a list of commands to use as path
-    to `geprotondl` main script, instead relying on a single entry
+- change: geprotondl-fzf.sh: now searches a list of commands to find `geprotondl`
+    main script
 - removed: geprotondl-up.py: completely wiped and deleted this script from
     the project, as it was confusing, which also eliminates the need for a symlink
     to "geprotondl.py"
