@@ -44,7 +44,6 @@ class FinishStatus(Enum):
 
 
 class Time(datetime.datetime):
-
     def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         return datetime.datetime.__new__(cls, *args, **kwargs)
 
@@ -94,7 +93,6 @@ class Time(datetime.datetime):
 
 
 class File(PosixPath):
-
     def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         return cls._from_parts(args).expanduser().resolve()  # type: ignore
 
@@ -128,7 +126,7 @@ class File(PosixPath):
             for chunk in iter(lambda: f.read(buffer_size), b""):
                 self_checksum.update(chunk)
             self_hash = self_checksum.hexdigest()
-        return (self_hash == compare_hash)
+        return self_hash == compare_hash
 
 
 # TypeAlias
@@ -136,9 +134,7 @@ GeProtonListing = Dict[str, File]
 
 
 class Interface:
-
-    def __init__(self, logger: Logger | None = None,
-                 be_quiet: bool = False) -> None:
+    def __init__(self, logger: Logger | None = None, be_quiet: bool = False) -> None:
         self._be_quiet: bool
         self.assume_yes: bool
         self.timeout: int
@@ -164,8 +160,7 @@ class Interface:
     # Simple setup of a message logging functionality. Intended to be used in
     # any function or class.
     # Logging levels: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
-    def new_logger(self, name: str = __name__,
-                   level: int = logging.INFO) -> Logger:
+    def new_logger(self, name: str = __name__, level: int = logging.INFO) -> Logger:
         self.log = logging.getLogger(name)
         logging.basicConfig(format="%(message)s")
         self.set_logger_level(level)
@@ -182,15 +177,20 @@ class Interface:
         else:
             return None
 
-    def readline_from_stdin(self, prompt: str = "",
-                            timeout: int | None = None) -> str | None:
+    def readline_from_stdin(
+        self, prompt: str = "", timeout: int | None = None
+    ) -> str | None:
         if not isinstance(prompt, str):
-            e = ("Value of prompt has wrong type, expected optional str: "
-                 f"{type(prompt)}")
+            e = (
+                "Value of prompt has wrong type, expected optional str: "
+                f"{type(prompt)}"
+            )
             raise TypeError(e)
         elif not isinstance(timeout, int | None):
-            e = ("Value of timeout has wrong type, expected optional int: "
-                 f"{type(timeout)}")
+            e = (
+                "Value of timeout has wrong type, expected optional int: "
+                f"{type(timeout)}"
+            )
             raise TypeError(e)
         elif prompt:
             sys.stderr.write(prompt)
@@ -198,15 +198,14 @@ class Interface:
         if timeout is None:
             timeout = self.timeout
         i, _, _ = select.select([sys.stdin], [], [], self.timeout)
-        if (i):
+        if i:
             return sys.stdin.readline().strip()
         else:
             sys.stderr.write("\n")
             sys.stderr.flush()
             return None
 
-    def ask_number(self,
-                   question: str | None = None) -> Tuple[int, FinishStatus]:
+    def ask_number(self, question: str | None = None) -> Tuple[int, FinishStatus]:
         if question is None:
             question = "Enter a number:"
         self.print(question)
@@ -217,7 +216,7 @@ class Interface:
         else:
             try:
                 return int(answer), FinishStatus.SUCCESS
-            except (ValueError):
+            except ValueError:
                 self.log.error("Input must be a number to proceed.")
                 return 0, FinishStatus.FAILURE
             else:
@@ -243,7 +242,6 @@ class Interface:
 
 
 class GithubDatabaseEntry:
-
     def __init__(self, data: Any, interface: Interface) -> None:
         self.interface = interface
         self.data = data
@@ -251,40 +249,39 @@ class GithubDatabaseEntry:
     # Convert the data into an alternative and flat structure, partially
     # changed keys and interpreted content.
     def parse(self) -> Dict[str, Any]:
-
         view: Dict[str, Any] = {}
         try:
-            view['json_url'] = urlparse(self.data['url'].strip())
-            view['html_url'] = urlparse(self.data['html_url'].strip())
-            view['author'] = self.data['author']['login'].strip()
-            view['title'] = self.data['name'].strip()
-            view['tag_name'] = self.data['tag_name'].strip()
-            pub = self.data['published_at'].strip().replace("Z", "")
-            view['pub'] = Time.fromisoformat(pub)
-            created = self.data['created_at'].strip().replace("Z", "")
-            view['date'] = Time.fromisoformat(created)
-            desc = self.data['body'.strip()]
-            view['desc'] = "\n".join(desc.splitlines())
+            view["json_url"] = urlparse(self.data["url"].strip())
+            view["html_url"] = urlparse(self.data["html_url"].strip())
+            view["author"] = self.data["author"]["login"].strip()
+            view["title"] = self.data["name"].strip()
+            view["tag_name"] = self.data["tag_name"].strip()
+            pub = self.data["published_at"].strip().replace("Z", "")
+            view["pub"] = Time.fromisoformat(pub)
+            created = self.data["created_at"].strip().replace("Z", "")
+            view["date"] = Time.fromisoformat(created)
+            desc = self.data["body".strip()]
+            view["desc"] = "\n".join(desc.splitlines())
             # Default values for optional assets data.
-            view['download_url'] = urlparse("http://")
-            view['filename'] = ""
-            view['size'] = 0
-            for asset in self.data['assets']:
-                content_type: str = asset['content_type'].strip()
+            view["download_url"] = urlparse("http://")
+            view["filename"] = ""
+            view["size"] = 0
+            for asset in self.data["assets"]:
+                content_type: str = asset["content_type"].strip()
                 is_archive: bool = ".tar.gz" in asset["name"].strip()
-                if content_type == 'application/gzip' or is_archive:
-                    dl = asset['browser_download_url'].strip()
-                    view['download_url'] = urlparse(dl)
-                    view['filename'] = asset['name'].strip()
-                    view['size'] = int(asset['size'])
+                if content_type == "application/gzip" or is_archive:
+                    dl = asset["browser_download_url"].strip()
+                    view["download_url"] = urlparse(dl)
+                    view["filename"] = asset["name"].strip()
+                    view["size"] = int(asset["size"])
                 elif content_type in [
                     "application/octet-stream",
                     "binary/octet-stream",
                 ]:
-                    dl = asset['browser_download_url'].strip()
-                    view['checksum_download_url'] = urlparse(dl)
-                    view['checksum_filename'] = asset['name'].strip()
-                    view['checksum_size'] = int(asset['size'])
+                    dl = asset["browser_download_url"].strip()
+                    view["checksum_download_url"] = urlparse(dl)
+                    view["checksum_filename"] = asset["name"].strip()
+                    view["checksum_size"] = int(asset["size"])
         except (KeyError, ValueError, OverflowError, OSError, TypeError):
             self.interface.log.error("Could not parse data from Github API.")
             return {}
@@ -294,9 +291,7 @@ class GithubDatabaseEntry:
     # Build a string out of most important meta information for presentation to
     # the user. It has options to convert some values to a human readable
     # format. And it is able to shorten the output to be more compact.
-    def summary(self,
-                sep: str = "\n",
-                pre: str = " o ") -> str:
+    def summary(self, sep: str = "\n", pre: str = " o ") -> str:
         view = self.parse()
         if not view:
             return ""
@@ -318,11 +313,13 @@ class GithubDatabaseEntry:
         if compact:
             fmt = " "
             desc = self.excerpt(desc)
-            summary = (f"{pre}{title}{sep}"
-                       f"{pre}{desc}{sep}"
-                       f"{pre}Tag:{fmt}{tag}{sep}"
-                       f"{pre}Date:{fmt}{date}{sep}"
-                       f"{pre}Size:{fmt}{size}")
+            summary = (
+                f"{pre}{title}{sep}"
+                f"{pre}{desc}{sep}"
+                f"{pre}Tag:{fmt}{tag}{sep}"
+                f"{pre}Date:{fmt}{date}{sep}"
+                f"{pre}Size:{fmt}{size}"
+            )
         else:
             if self.interface.human_readable:
                 fmt = "\n\t"
@@ -331,13 +328,15 @@ class GithubDatabaseEntry:
                 file += f"{sep}"
             else:
                 fmt = "\t"
-            summary = (f"{pre}{title}{sep}"
-                       f"{pre}{desc}{sep}"
-                       f"{pre}Releases Page:{fmt}{html}{sep}"
-                       f"{pre}Tag Name:{fmt}{tag}{sep}"
-                       f"{pre}Publish Date:{fmt}{date}{sep}"
-                       f"{pre}Download Size:{fmt}{size}{sep}"
-                       f"{pre}Download File:{fmt}{file}")
+            summary = (
+                f"{pre}{title}{sep}"
+                f"{pre}{desc}{sep}"
+                f"{pre}Releases Page:{fmt}{html}{sep}"
+                f"{pre}Tag Name:{fmt}{tag}{sep}"
+                f"{pre}Publish Date:{fmt}{date}{sep}"
+                f"{pre}Download Size:{fmt}{size}{sep}"
+                f"{pre}Download File:{fmt}{file}"
+            )
         return summary
 
     # Creates a short one liner string from a longer text.
@@ -347,7 +346,6 @@ class GithubDatabaseEntry:
     # Downloads the archive from download url into a temporary folder. Then
     # unpacks it's content into the given basedir folder.
     def install(self, basedir: File, force: bool) -> FinishStatus:  # noqa:C901
-
         def cleanup() -> None:
             tempfile.unlink(missing_ok=True)
             temp_checksumfile.unlink(missing_ok=True)
@@ -356,8 +354,7 @@ class GithubDatabaseEntry:
 
         view = self.parse()
         if view:
-            if (view.get("filename", "") == ""
-                    or view.get("download_url", "") == ""):
+            if view.get("filename", "") == "" or view.get("download_url", "") == "":
                 msg = "Installation not possible. No source available."
                 self.interface.log.error(msg)
                 return FinishStatus.FAILURE
@@ -381,13 +378,14 @@ class GithubDatabaseEntry:
             self.interface.log.info(msg)
             if self.interface.ask_to_proceed():
                 tempdir = TemporaryDirectory()
-                tempfile = File(Path(tempdir.name) / view['filename'])
+                tempfile = File(Path(tempdir.name) / view["filename"])
                 if not force:
-                    temp_checksumfile = File(Path(tempdir.name) /
-                                             view['checksum_filename'])
+                    temp_checksumfile = File(
+                        Path(tempdir.name) / view["checksum_filename"]
+                    )
                 self.interface.log.info("Downloading.")
                 try:
-                    self.download(view['download_url'], tempfile)
+                    self.download(view["download_url"], tempfile)
                     if force:
                         if GeProtonLocal.is_proton_dir(folder):
                             shutil.rmtree(folder, ignore_errors=False)
@@ -397,10 +395,12 @@ class GithubDatabaseEntry:
                             cleanup()
                             return FinishStatus.FAILURE
                     else:
-                        self.download(view['checksum_download_url'],
-                                      temp_checksumfile,
-                                      enable_progress_bar=False)
-                except (KeyboardInterrupt):
+                        self.download(
+                            view["checksum_download_url"],
+                            temp_checksumfile,
+                            enable_progress_bar=False,
+                        )
+                except KeyboardInterrupt:
                     self.interface.log.info("Download stopped.")
                     cleanup()
                     return FinishStatus.FAILURE
@@ -417,15 +417,19 @@ class GithubDatabaseEntry:
                 self.interface.log.info("Unpacking.")
                 try:
                     self.unpack(tempfile, basedir)
-                except (KeyboardInterrupt):
-                    msg = ("Unpacking stopped. GE-Proton folder unfinished, "
-                           f"delete manually: {folder}")
+                except KeyboardInterrupt:
+                    msg = (
+                        "Unpacking stopped. GE-Proton folder unfinished, "
+                        f"delete manually: {folder}"
+                    )
                     self.interface.log.error(msg)
                     cleanup()
                     return FinishStatus.FAILURE
-                except (subprocess.CalledProcessError):
-                    msg = ("Unpacking failed. GE-Proton folder maybe "
-                           f"incomplete, delete manually: {folder}")
+                except subprocess.CalledProcessError:
+                    msg = (
+                        "Unpacking failed. GE-Proton folder maybe "
+                        f"incomplete, delete manually: {folder}"
+                    )
                     self.interface.log.error(msg)
                     cleanup()
                     return FinishStatus.FAILURE
@@ -441,9 +445,9 @@ class GithubDatabaseEntry:
 
     # Downloads a file from internet to a given file path as destination. Print
     # and update a live progress bar to stderr stream as well.
-    def download(self, url: ParseResult, file: File,
-                 enable_progress_bar: bool = True) -> bool:
-
+    def download(
+        self, url: ParseResult, file: File, enable_progress_bar: bool = True
+    ) -> bool:
         def progress_bar(count: int, blockSize: int, totalSize: int) -> None:
             percent = int(count * blockSize * 100 / totalSize)
             progress = f"\r ...{percent}%"
@@ -458,7 +462,7 @@ class GithubDatabaseEntry:
                 request.urlretrieve(input, output, reporthook=progress_bar)
             else:
                 request.urlretrieve(input, output)
-        except (ContentTooShortError):
+        except ContentTooShortError:
             self.interface.log.error("Download incomplete.")
             file.unlink(missing_ok=True)
             return False
@@ -470,8 +474,7 @@ class GithubDatabaseEntry:
         return True
 
     # Unpack content of an archive into a destination folder.
-    def unpack(self, file: File,
-               basedir: File) -> subprocess.CompletedProcess[bytes]:
+    def unpack(self, file: File, basedir: File) -> subprocess.CompletedProcess[bytes]:
         command = ["tar"]
         command.append("xf")
         command.append(file.as_posix())
@@ -487,14 +490,12 @@ DatabaseEntryStatus = Tuple[GithubDatabaseEntry | None, FinishStatus]
 
 
 class App:
-
     author = "Tuncay D."
     name = "geprotondl"
-    version = "0.2"
+    version = "0.3"
     license = "MIT"
 
     def __init__(self, options: argparse.Namespace) -> None:
-
         # As init can't return anything else, this variable is used to indicate
         # it's success status. Only set this variable within init itself.
         self.status: FinishStatus = FinishStatus.UNKNOWN
@@ -548,9 +549,9 @@ class App:
         self.interface.assume_yes = options.yes
         self.interface.compact_view = options.brief
         self.interface.human_readable = options.human
-        self.interface.max_entries = self.max_entries(options.max,
-                                                      self.install_mode,
-                                                      self.remove_mode)
+        self.interface.max_entries = self.max_entries(
+            options.max, self.install_mode, self.remove_mode
+        )
 
         # This local structure also contains the path to install folder,
         # therefore no need to create a dedicated variable like cache_dir.
@@ -579,8 +580,9 @@ class App:
         self.active_entry: GithubDatabaseEntry | None = None
 
     # Get limit for number of maximum elements to display.
-    def max_entries(self, limit: int | None, install_mode: bool,
-                    show_releases: bool) -> int:
+    def max_entries(
+        self, limit: int | None, install_mode: bool, show_releases: bool
+    ) -> int:
         if not limit:
             if install_mode or show_releases:
                 return 9
@@ -618,11 +620,10 @@ class App:
     def load_releases_db(self) -> FinishStatus:
         file = self.cache_dir / "releases.json"
         try:
-            self.releases = GithubDatabase(file, self.interface,
-                                           self.force_recreate)
+            self.releases = GithubDatabase(
+                file, self.interface, self.force_recreate)
         except (URLError, HTTPError):
-            msg = ("Failed connection to Github API. URL or HTTPS "
-                   "request problem.")
+            msg = "Failed connection to Github API. URL or HTTPS " "request problem."
             self.interface.log.critical(msg)
             return FinishStatus.FAILURE
         except (KeyError, ValueError):
@@ -658,9 +659,9 @@ class App:
 
     # Extract a database sub entry by requested tag_name or by index. Defaults
     # to first entry. Save result into active_entry variable.
-    def load_active_entry(self, entry: GithubDatabaseEntry
-                          | str | int | None = None) -> FinishStatus:
-
+    def load_active_entry(
+        self, entry: GithubDatabaseEntry | str | int | None = None
+    ) -> FinishStatus:
         if self.releases is None:
             return FinishStatus.FAILURE
         elif entry is None:
@@ -687,8 +688,14 @@ class App:
                 if not msg:
                     msg = "Couldn't parse database entry."
                 raise TypeError(msg)
-        except (KeyError, AttributeError, ValueError, OverflowError, OSError,
-                TypeError) as e:
+        except (
+            KeyError,
+            AttributeError,
+            ValueError,
+            OverflowError,
+            OSError,
+            TypeError,
+        ) as e:
             self.interface.log.error(e)
             return FinishStatus.FAILURE
         if self.show_summary:
@@ -698,8 +705,7 @@ class App:
     # Download current selected TAG entry and unpack into install folder.
     def install_entry(self) -> FinishStatus:
         if self.active_entry:
-            return self.active_entry.install(self.local.basedir,
-                                             self.force_recreate)
+            return self.active_entry.install(self.local.basedir, self.force_recreate)
         else:
             return FinishStatus.FAILURE
 
@@ -726,8 +732,10 @@ class App:
 
     def basedir_ready(self) -> bool:
         if not self.local.basedir.is_dir():
-            msg = ("Install dir could not be created or can't be accessed: "
-                   f'"{self.local.basedir}"')
+            msg = (
+                "Install dir could not be created or can't be accessed: "
+                f'"{self.local.basedir}"'
+            )
             self.interface.log.critical(msg)
             self.status = FinishStatus.FAILURE
             return False
@@ -736,7 +744,6 @@ class App:
 
 
 class GeProtonLocal:
-
     def __init__(self, basedir: File, interface: Interface):
         self.interface = interface
         self.basedir: File = basedir
@@ -749,7 +756,7 @@ class GeProtonLocal:
     def create_basedir(self) -> bool:
         try:
             self.basedir.mkdir(parents=True, exist_ok=True)
-        except (PermissionError):
+        except PermissionError:
             return False
         return self.basedir.is_dir()
 
@@ -801,7 +808,7 @@ class GeProtonLocal:
                         line += changed.days_ago
                     else:
                         line += str(changed.date())
-                except (FileNotFoundError):
+                except FileNotFoundError:
                     index -= 1
                     # At this stage of the program, a missing version file
                     # should never happen. Because only folders with a version
@@ -815,11 +822,13 @@ class GeProtonLocal:
     # installation directory.
     @staticmethod
     def is_proton_dir(path: File) -> bool:
-        is_proton = ("Proton" in path.name
-                     and path.is_dir()
-                     and (path / "proton").is_file()
-                     and (path / "version").is_file()
-                     and (path / "protonfixes").is_dir())
+        is_proton = (
+            "Proton" in path.name
+            and path.is_dir()
+            and (path / "proton").is_file()
+            and (path / "version").is_file()
+            and (path / "protonfixes").is_dir()
+        )
         return is_proton
 
     # Read version file and extract it's tag_name and version component.
@@ -867,7 +876,7 @@ class GeProtonLocal:
                     try:
                         eslice = islice(self.installs.items(), index - 1, None)
                         return next(eslice), FinishStatus.SUCCESS
-                    except (StopIteration):
+                    except StopIteration:
                         msg = "Requested index not found in local installs."
         if msg:
             self.interface.log.error(msg)
@@ -910,13 +919,17 @@ class GeProtonLocal:
     # before deleting any folder structure.
     def delete_folder(self, path: File) -> bool:
         if not self.is_proton_dir(path):
-            msg = (f"({path.as_posix()}) is not a Proton directory. Abort "
-                   "process without deletion.")
+            msg = (
+                f"({path.as_posix()}) is not a Proton directory. Abort "
+                "process without deletion."
+            )
             self.interface.log.error(msg)
             return False
         elif not shutil.rmtree.avoids_symlink_attacks:
-            msg = ("shutil.rmtree routine not save against symlink attacks. "
-                   "Abort process without deletion.")
+            msg = (
+                "shutil.rmtree routine not save against symlink attacks. "
+                "Abort process without deletion."
+            )
             self.interface.log.error(msg)
             return False
         else:
@@ -930,7 +943,6 @@ class GeProtonLocal:
 
 
 class GithubDatabase:
-
     def __init__(self, path: File, interface: Interface, force: bool) -> None:
         self.interface = interface
         self.file: File = path
@@ -964,7 +976,7 @@ class GithubDatabase:
             return True
         try:
             age_seconds = time.time() - os.path.getctime(self.file)
-        except (Exception):
+        except Exception:
             return False
         else:
             age_minutes = int(int(age_seconds) / 60)
@@ -986,10 +998,12 @@ class GithubDatabase:
         for entry in self.db:
             try:
                 if tag_name == entry["tag_name"]:
-                    return (GithubDatabaseEntry(entry, self.interface),
-                            FinishStatus.SUCCESS)
+                    return (
+                        GithubDatabaseEntry(entry, self.interface),
+                        FinishStatus.SUCCESS,
+                    )
                     break
-            except (KeyError):
+            except KeyError:
                 continue
         return None, FinishStatus.FAILURE
 
@@ -1002,10 +1016,12 @@ class GithubDatabase:
         for register, entry in enumerate(self.db, 1):
             try:
                 if register == index:
-                    return (GithubDatabaseEntry(entry, self.interface),
-                            FinishStatus.SUCCESS)
+                    return (
+                        GithubDatabaseEntry(entry, self.interface),
+                        FinishStatus.SUCCESS,
+                    )
                     break
-            except (KeyError):
+            except KeyError:
                 continue
         return None, FinishStatus.FAILURE
 
@@ -1027,15 +1043,17 @@ class GithubDatabase:
             msg += "Available from: \n\t"
         self.interface.print(msg + self.url.geturl())
         if not self.interface.compact_view:
-            msg = ("\nsorted by newest release tag  --  shows day of publish\n"
-                   "[x] = locally installed\n")
+            msg = (
+                "\nsorted by newest release tag  --  shows day of publish\n"
+                "[x] = locally installed\n"
+            )
             self.interface.print(msg)
         if not self.db:
             return 0
         index: int = 0
         for index, entry in enumerate(self.iter, 1):
             line = f"{index: 3d}."
-            tag_name: str = entry['tag_name']  # type: ignore
+            tag_name: str = entry["tag_name"]  # type: ignore
             if not self.interface.compact_view:
                 if tag_name in local_installs:
                     line += " [x]"
@@ -1044,7 +1062,7 @@ class GithubDatabase:
             line += f" {tag_name}"
             if not self.interface.compact_view:
                 line += "  --  "
-                pub: str = entry['published_at']  # type: ignore
+                pub: str = entry["published_at"]  # type: ignore
                 pub_time = Time.fromisoformat(pub.strip().replace("Z", ""))
                 if self.interface.human_readable:
                     line += pub_time.days_ago
@@ -1070,9 +1088,9 @@ class GithubDatabase:
 
 # Find root folder of Steam installation. If one is found, return a complete
 # File path with the final component of "compatibilitytools.d" added.
-def default_install_dir(enable_local: bool = True, enable_flatpak: bool = True,
-                        enable_snap: bool = True) -> Tuple[str | None,
-                                                           FinishStatus]:
+def default_install_dir(
+    enable_local: bool = True, enable_flatpak: bool = True, enable_snap: bool = True
+) -> Tuple[str | None, FinishStatus]:
     roots: List[str] = []
     if enable_local:
         roots += ["~/.local/share/Steam", "~/.steam/root", "~/.steam/steam"]
@@ -1089,23 +1107,26 @@ def default_install_dir(enable_local: bool = True, enable_flatpak: bool = True,
 
 
 # The amazing handling of arguments.
-def parse_arguments(argv: list[str]
-                    | None = None) -> Tuple[argparse.Namespace, FinishStatus]:
-
+def parse_arguments(
+    argv: list[str] | None = None,
+) -> Tuple[argparse.Namespace, FinishStatus]:
     # Will be overwritten to be used as default value for various options.
     default: str | None = ""
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=("CLI to download latest or manage your GE-Proton for "
-                     "Steam"),
-        epilog=("\n\n"
-                "Copyright © 2023, 2024 Tuncay D. "
-                "<https://github.com/thingsiplay/geprotondl>"))
+        description=(
+            "CLI to download latest or manage your GE-Proton for " "Steam"),
+        epilog=(
+            "\n\n"
+            "Copyright © 2023, 2024 Tuncay D. "
+            "<https://github.com/thingsiplay/geprotondl>"
+        ),
+    )
 
     parser.add_argument(
-        "-v", "--version", action="store_true",
-        help="show version information and exit")
+        "-v", "--version", action="store_true", help="show version information and exit"
+    )
 
     folders = parser.add_argument_group(title="locations", description=None)
 
@@ -1114,103 +1135,180 @@ def parse_arguments(argv: list[str]
         return parser.parse_args([]), FinishStatus.FAILURE
 
     folders.add_argument(
-        "-D", "--dir", metavar="DIR", type=File,
+        "-D",
+        "--dir",
+        metavar="DIR",
+        type=File,
         default=default,
-        help=("folder to unpack and install GE-Proton into, default: "
-              f'"{default}"'))
+        help=(
+            "folder to unpack and install GE-Proton into, default: " f'"{default}"'),
+    )
 
     default = File("~/.cache/geprotondl").as_posix()
     folders.add_argument(
-        "-C", "--cache", metavar="DIR", type=File,
+        "-C",
+        "--cache",
+        metavar="DIR",
+        type=File,
         default=default,
-        help=("folder to save temporary cache files into, default: "
-              f'"{default}"'))
+        help=(
+            "folder to save temporary cache files into, default: " f'"{default}"'),
+    )
 
     folders.add_argument(
-        "-d", "--print-dir", action="store_true",
-        help="show path of install folder set by -D, can be combined with -b")
+        "-d",
+        "--print-dir",
+        action="store_true",
+        help="show path of install folder set by -D, can be combined with -b",
+    )
 
     folders.add_argument(
-        "-c", "--print-cache", action="store_true",
-        help="show path of cache folder set by -C, can be combined with -b")
+        "-c",
+        "--print-cache",
+        action="store_true",
+        help="show path of cache folder set by -C, can be combined with -b",
+    )
 
     mode = parser.add_argument_group(title="modes", description=None)
     mode_ex = mode.add_mutually_exclusive_group()
 
     mode_ex.add_argument(
-        "-i", "--install", action="store_true",
-        help=("download and unpack latest release, combine with -l or -T to "
-              "choose from other available versions"))
+        "-i",
+        "--install",
+        action="store_true",
+        help=(
+            "download and unpack latest release, combine with -l or -T to "
+            "choose from other available versions"
+        ),
+    )
 
     mode_ex.add_argument(
-        "-r", "--remove", action="store_true",
-        help=("uninstall oldest local version, combine with -l or -T to "
-              "choose from other available versions"))
+        "-r",
+        "--remove",
+        action="store_true",
+        help=(
+            "uninstall oldest local version, combine with -l or -T to "
+            "choose from other available versions"
+        ),
+    )
 
     mode_ex.add_argument(
-        "-t", "--test", action="store_true",
-        help=("show tag name if it's known in database and not installed "
-              "locally, default to latest unless combined with -T, when "
-              "-l or -L are active then always show selected tag name, "
-              "can be combined with -b to output version number only"))
+        "-t",
+        "--test",
+        action="store_true",
+        help=(
+            "show tag name if it's known in database and not installed "
+            "locally, default to latest unless combined with -T, when "
+            "-l or -L are active then always show selected tag name, "
+            "can be combined with -b to output version number only"
+        ),
+    )
 
     choose = parser.add_argument_group(title="choose", description=None)
 
     choose.add_argument(
-        "-T", "--tag", metavar="NAME",
-        help=("select a specific version by tag name identifier, in example "
-              'as "GE-Proton7-53" or in short "7-53"'))
+        "-T",
+        "--tag",
+        metavar="NAME",
+        help=(
+            "select a specific version by tag name identifier, in example "
+            'as "GE-Proton7-53" or in short "7-53"'
+        ),
+    )
 
     listing = parser.add_argument_group(title="listing", description=None)
     listing_ex = listing.add_mutually_exclusive_group()
 
     listing_ex.add_argument(
-        "-l", "--list", action="store_true",
-        help=("show local installed versions, but when combined with -i then "
-              "show downloadable releases instead"))
+        "-l",
+        "--list",
+        action="store_true",
+        help=(
+            "show local installed versions, but when combined with -i then "
+            "show downloadable releases instead"
+        ),
+    )
 
     listing_ex.add_argument(
-        "-L", "--releases", action="store_true",
-        help=("show downloadable releases, but when combined with -r then "
-              "show local installed versions instead"))
+        "-L",
+        "--releases",
+        action="store_true",
+        help=(
+            "show downloadable releases, but when combined with -r then "
+            "show local installed versions instead"
+        ),
+    )
 
     listing.add_argument(
-        "-m", "--max", metavar="NUM", type=int,
-        help=("limit max entries to show for listings, defaults to '9' for "
-              "install and no limit otherwise"))
+        "-m",
+        "--max",
+        metavar="NUM",
+        type=int,
+        help=(
+            "limit max entries to show for listings, defaults to '9' for "
+            "install and no limit otherwise"
+        ),
+    )
 
     info = parser.add_argument_group(title="info", description=None)
 
     info.add_argument(
-        "-s", "--summary", action="store_true",
-        help="show description and meta information for selected version")
+        "-s",
+        "--summary",
+        action="store_true",
+        help="show description and meta information for selected version",
+    )
 
     info.add_argument(
-        "-H", "--human", action="store_true",
-        help=("format certain numbers, dates and entire structures into human "
-              "readable presentation"))
+        "-H",
+        "--human",
+        action="store_true",
+        help=(
+            "format certain numbers, dates and entire structures into human "
+            "readable presentation"
+        ),
+    )
 
     info.add_argument(
-        "-b", "--brief", action="store_true",
-        help=("reduce some output to be compact, create excerpts from long "
-              "descriptions"))
+        "-b",
+        "--brief",
+        action="store_true",
+        help=(
+            "reduce some output to be compact, create excerpts from long "
+            "descriptions"
+        ),
+    )
 
     info.add_argument(
-        "-q", "--quiet", action="store_true",
-        help=("suppress most informal and error messages, hide interface "
-              "parts providing additional context"))
+        "-q",
+        "--quiet",
+        action="store_true",
+        help=(
+            "suppress most informal and error messages, hide interface "
+            "parts providing additional context"
+        ),
+    )
 
     control = parser.add_argument_group(title="control", description=None)
 
     control.add_argument(
-        "-f", "--force", action="store_true",
-        help=("skip checksum verification, re-download database and files, "
-              "re-install and overwrite existing version"))
+        "-f",
+        "--force",
+        action="store_true",
+        help=(
+            "skip checksum verification, re-download database and files, "
+            "re-install and overwrite existing version"
+        ),
+    )
 
     control.add_argument(
-        "-y", "--yes", action="store_true",
-        help=("don't ask to proceed for download, install or remove, assume "
-              "reply yes"))
+        "-y",
+        "--yes",
+        action="store_true",
+        help=(
+            "don't ask to proceed for download, install or remove, assume " "reply yes"
+        ),
+    )
 
     if argv is None:
         return parser.parse_args(), FinishStatus.SUCCESS
@@ -1231,7 +1329,6 @@ def run_main(argv: list[str]) -> int:
 
 # The mighty main.
 def main(argv: list[str] | None = None) -> int:  # noqa: C901
-
     # Used to indicate return values of functions and operations to determine
     # if it was a success or failure.
     status: FinishStatus = FinishStatus.UNKNOWN
