@@ -7,7 +7,7 @@ CLI to download latest or manage your GE-Proton for Steam
 - Update Notes: [CHANGES](CHANGES.md)
 - License: [MIT License](LICENSE)
 
-![demo](https://raw.githubusercontent.com/thingsiplay/geprotondl/main/demo.mp4)
+https://github.com/thingsiplay/geprotondl/assets/1114291/cc9aec4f-2872-47f0-898d-c96707b73c29
 
 ## Introduction
 
