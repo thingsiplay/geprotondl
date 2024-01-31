@@ -1,14 +1,23 @@
 #!/bin/env bash
 
 # The path or command name to the geprotondl script.
-# cmd_geprotondl="geprotondl.py"
-default_geprotondl_cmd="geprotondl.py"
+geprotondl_cmd_list=("geprotondl.py" "geprotondl")
+# Find first usable command and use it in rest of script.
+for cmd in "${geprotondl_cmd_list[@]}"; do
+	cmd=$(command -v "${cmd}")
+	if [ "${cmd}" == "" ]; then
+		continue
+	else
+		default_geprotondl_cmd="${cmd}"
+		break
+	fi
+done
 
 # Note: Try to give enough space between option name and description, so it can
 # be aligned in the same manner as the main applications help output.
 print_usage() {
-    echo \
-'usage: geprotondl-fzf [-h] [-g CMD] [-C DIR] [-f]
+	echo \
+		'usage: geprotondl-fzf [-h] [-g CMD] [-C DIR] [-f]
 
 Frontend script to geprotondl by utilizing fzf. Select an entry will run
 geprotondl to either install or remove, depending on the current installation
@@ -29,14 +38,12 @@ All commandline arguments are forwarded to geprotondl.'
 # The bash internal function `getopts` does not handle long option names
 # starting with double dash. Do not process further if any user argument starts
 # with "--".
-for argument in "${@}"
-do
-    if [[ ${argument} =~ --.* ]]
-    then
-        printf "Long option names starting with double dash \"--\" are not "
-        echo "supported by this script: \"${argument}\""
-        exit 1
-    fi
+for argument in "${@}"; do
+	if [[ ${argument} =~ --.* ]]; then
+		printf "Long option names starting with double dash \"--\" are not "
+		echo "supported by this script: \"${argument}\""
+		exit 1
+	fi
 done
 
 opt_geprotondl_cmd=""
@@ -48,61 +55,58 @@ opt_force=0
 # option here should match the long one from the original geprotondl program.
 # Generally speaking long options should be avoided with this shell script.
 while getopts ':hg:C:f' OPTION; do
-    case "$OPTION" in
-        h)
-            print_usage
-            exit 0
-            ;;
-        g)
-            opt_geprotondl_cmd="${OPTARG}"
-            ;;
-        C)
-            opt_cache_dir="${OPTARG}"
-            ;;
-        f)
-            opt_force=1
-            ;;
-        ?)
-            continue
-            ;;
-    esac
+	case "$OPTION" in
+	h)
+		print_usage
+		exit 0
+		;;
+	g)
+		opt_geprotondl_cmd="${OPTARG}"
+		;;
+	C)
+		opt_cache_dir="${OPTARG}"
+		;;
+	f)
+		opt_force=1
+		;;
+	?)
+		continue
+		;;
+	esac
 done
 
-if [ "${opt_geprotondl_cmd}" == "" ]
-then
-    geprotondl_cmd="${default_geprotondl_cmd}"
+if [ "${opt_geprotondl_cmd}" == "" ]; then
+	geprotondl_cmd="${default_geprotondl_cmd}"
 else
-    geprotondl_cmd="${opt_geprotondl_cmd}"
+	geprotondl_cmd="${opt_geprotondl_cmd}"
 fi
 
 # Intermediate variable to hold in case the command cannot be found, so that
 # the failed command can be displayed.
 lookup_geprotondl_cmd="$(command -v "${geprotondl_cmd}")"
 
-if [ "${lookup_geprotondl_cmd}" == "" ]
-then
-    echo "Command does not exist: \"${geprotondl_cmd}\""
-    exit 1
+if [ "${lookup_geprotondl_cmd}" == "" ]; then
+	echo "Command does not exist: \"${geprotondl_cmd}\""
+	exit 1
 else
-    geprotondl_cmd="${lookup_geprotondl_cmd}"
+	geprotondl_cmd="${lookup_geprotondl_cmd}"
 fi
 
-if [ "${opt_cache_dir}" == "" ]
-then
-    # Default cache folder if no option is given.
-    export cache_dir="$("${geprotondl_cmd}" -cb)"
-    # Alternatively comment the above line out and uncomment the below one to
-    # set the path directly. Without running the above command this should work
-    # much faster. Don't forget to edit the user name.
-    #export cache_dir="/home/USER/.cache/geprotondl"
+if [ "${opt_cache_dir}" == "" ]; then
+	# Default cache folder if no option is given.
+	cache_dir="$("${geprotondl_cmd}" -cb)"
+	# Alternatively comment the above line out and uncomment the below one to
+	# set the path directly. Without running the above command this should work
+	# much faster. Don't forget to edit the user name.
+	#export cache_dir="/home/USER/.cache/geprotondl"
 else
-    export cache_dir="${opt_cache_dir}"
+	cache_dir="${opt_cache_dir}"
 fi
+export cache_dir
 
-if [ ! -d "${cache_dir}" ]
-then
-    echo "Cache folder does not exist: \"${cache_dir}\""
-    exit 1
+if [ ! -d "${cache_dir}" ]; then
+	echo "Cache folder does not exist: \"${cache_dir}\""
+	exit 1
 fi
 
 # Delete all summary files for each entry that has no downloadable content
@@ -110,49 +114,45 @@ fi
 grep -ls 'Download Size:[[:space:]]*0 Bytes' -- "${cache_dir}/"*.summary |
 	xargs rm -f --
 
-create_summary () {
-    local file="${cache_dir}/${1}.summary"
-    if [ "${opt_force}" == 1 ] || ! [ -f "${file}" ]
-    then
-        # Don't use human readable, as otherwise the dates would be converted
-        # to relative days and not accurate anymore.
-        "${geprotondl_cmd}" --summary --quiet --tag "${1}" \
-            > "${file}" \
-            || return &
-    fi
+create_summary() {
+	local file="${cache_dir}/${1}.summary"
+	if [ "${opt_force}" == 1 ] || ! [ -f "${file}" ]; then
+		# Don't use human readable, as otherwise the dates would be converted
+		# to relative days and not accurate anymore.
+		"${geprotondl_cmd}" --summary --quiet --tag "${1}" \
+			>"${file}" ||
+			return &
+	fi
 }
 
-cat_summary () {
-    local file="${cache_dir}/${1}.summary"
-    cat "${file}"
+cat_summary() {
+	local file="${cache_dir}/${1}.summary"
+	cat "${file}"
 }
 
 export -f cat_summary
 
-for tag in $("${geprotondl_cmd}" --releases --quiet --brief \
-            | grep -oE "GE-Proton[^ ]+")
-do
-    create_summary "${tag}" > /dev/null &
+for tag in $("${geprotondl_cmd}" --releases --quiet --brief |
+	grep -oE "GE-Proton[^ ]+"); do
+	create_summary "${tag}" >/dev/null &
 done
 
 tag_cmd='$(echo {} | grep -oE "GE-Proton[^ ]+")'
-selection=$("${geprotondl_cmd}" --releases --quiet \
-        | fzf --no-sort --exact --no-extended \
-            --layout=reverse-list \
-            --preview-label="${0##*/}" \
-            --preview-window="down:60%,wrap" \
-            --preview="cat_summary ${tag_cmd}")
+selection=$("${geprotondl_cmd}" --releases --quiet |
+	fzf --no-sort --exact --no-extended \
+		--layout=reverse-list \
+		--preview-label="${0##*/}" \
+		--preview-window="down:60%,wrap" \
+		--preview="cat_summary ${tag_cmd}")
 
-if [ "${selection}" == "" ]
-then
-    exit
+if [ "${selection}" == "" ]; then
+	exit
 else
-    if [[ "${selection}" =~ \[x\] ]]
-    then
-        option="--remove"
-    else
-        option="--install"
-    fi
-    tag_name=$(echo "${selection}" | grep -oE 'GE-Proton[^ ]+')
-    "${geprotondl_cmd}" ${option} --tag "${tag_name}" "${@}"
+	if [[ "${selection}" =~ \[x\] ]]; then
+		option="--remove"
+	else
+		option="--install"
+	fi
+	tag_name=$(echo "${selection}" | grep -oE 'GE-Proton[^ ]+')
+	"${geprotondl_cmd}" ${option} --tag "${tag_name}" "${@}"
 fi
