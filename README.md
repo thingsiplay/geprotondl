@@ -7,8 +7,6 @@ CLI to download latest or manage your GE-Proton for Steam
 - Update Notes: [CHANGES](CHANGES.md)
 - License: [MIT License](LICENSE)
 
-https://github.com/thingsiplay/geprotondl/assets/1114291/cc9aec4f-2872-47f0-898d-c96707b73c29
-
 ## Introduction
 
 Did you always wanted to install the newest [GE-Proton from Glorious
@@ -21,6 +19,12 @@ install or remove GE-Proton packages, while staying in the terminal.
 
 GE-Proton is an alternative to the Valve Proton in Steam. It gets faster
 updates and often has additional fixes.
+
+https://github.com/thingsiplay/geprotondl/assets/1114291/cc9aec4f-2872-47f0-898d-c96707b73c29
+
+
+https://github.com/thingsiplay/geprotondl/assets/1114291/cc5975ca-e3e1-42ae-8b1f-0b43fc6354be
+
 
 ### Features
 
