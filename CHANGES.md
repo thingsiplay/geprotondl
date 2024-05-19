@@ -2,7 +2,7 @@
 
 Update history for **geprotondl**.
 
-## Next
+## v0.4 - May 19, 2024
 
 - fix: geprotondl.py: script now compatible with and should require at least
   Python v3.12, as the internally how Paths are handled changed

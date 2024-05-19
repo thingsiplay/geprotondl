@@ -500,7 +500,7 @@ DatabaseEntryStatus = Tuple[GithubDatabaseEntry | None, FinishStatus]
 class App:
     author = "Tuncay D."
     name = "geprotondl"
-    version = "0.3"
+    version = "0.4"
     license = "MIT"
 
     def __init__(self, options: argparse.Namespace) -> None:
