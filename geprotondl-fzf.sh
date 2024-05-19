@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 # The path or command name to the geprotondl script.
 geprotondl_cmd_list=("geprotondl.py" "geprotondl")
