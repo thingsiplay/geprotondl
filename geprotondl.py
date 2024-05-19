@@ -92,13 +92,21 @@ class Time(datetime.datetime):
             return ""
 
 
+# NOTE: This workaround was required for Python 3.11 and prior. Since
+#       Python 3.12 __new__() and __init__() are replaced with below __init__()
+#
+# class File(PosixPath):
+#     def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+#         return cls._load_parts(args).expanduser().resolve()  # type: ignore
+#
+#     def __init__(self, source: str | Path, *args: Any) -> None:
+#         super().__init__()
+#         self.__source = Path(source)
+#
 class File(PosixPath):
-    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
-        return cls._from_parts(args).expanduser().resolve()  # type: ignore
-
     def __init__(self, source: str | Path, *args: Any) -> None:
-        super().__init__()
         self.__source = Path(source)
+        super().__init__(Path(source, *args).expanduser().resolve())
 
     @property
     def source(self) -> Path:
@@ -620,8 +628,7 @@ class App:
     def load_releases_db(self) -> FinishStatus:
         file = self.cache_dir / "releases.json"
         try:
-            self.releases = GithubDatabase(
-                file, self.interface, self.force_recreate)
+            self.releases = GithubDatabase(file, self.interface, self.force_recreate)
         except (URLError, HTTPError):
             msg = "Failed connection to Github API. URL or HTTPS " "request problem."
             self.interface.log.critical(msg)
@@ -1115,8 +1122,7 @@ def parse_arguments(
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=(
-            "CLI to download latest or manage your GE-Proton for " "Steam"),
+        description=("CLI to download latest or manage your GE-Proton for " "Steam"),
         epilog=(
             "\n\n"
             "Copyright © 2023, 2024 Tuncay D. "
@@ -1140,8 +1146,7 @@ def parse_arguments(
         metavar="DIR",
         type=File,
         default=default,
-        help=(
-            "folder to unpack and install GE-Proton into, default: " f'"{default}"'),
+        help=("folder to unpack and install GE-Proton into, default: " f'"{default}"'),
     )
 
     default = File("~/.cache/geprotondl").as_posix()
@@ -1151,8 +1156,7 @@ def parse_arguments(
         metavar="DIR",
         type=File,
         default=default,
-        help=(
-            "folder to save temporary cache files into, default: " f'"{default}"'),
+        help=("folder to save temporary cache files into, default: " f'"{default}"'),
     )
 
     folders.add_argument(
